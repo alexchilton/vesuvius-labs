@@ -80,4 +80,5 @@ Downloading returns 403 until the account accepts that competition's rules (one 
 | 01 volumes | one 3D crop | OME-Zarr pyramids and chunks; air vs papyrus; three orthogonal views |
 | 02 flattening | segment w025 mesh + scroll crop | virtual unwrapping by hand, checked against the official surface volume |
 | 03 ink detection | w025 surface volume + official ink map | a small 2.5D CNN trained on pseudo-labels, spatial train/val split |
-| 04 domain shift (next) | 2023 Kaggle fragments | train on one fragment, test on another |
+| 04 self-supervised | w025 surface volume + official ink map | masked-reconstruction pretraining, then the 03 CNN with 2-100% of the labels |
+| 05 domain shift (next) | 2023 Kaggle fragments | train on one fragment, test on another |

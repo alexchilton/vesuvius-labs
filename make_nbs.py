@@ -408,7 +408,7 @@ md("""
 1. Why would a random train/validation patch split overstate the score here?
 2. What does `amax` over depth assume about where the ink sits in the stack?
 3. The pseudo-label is speckled in the lower half. How would you stop the model learning the speckle?
-4. Notebook 04 trains on one fragment and tests on another. What do you expect to happen to the correlation, and why?
+4. A model trained on one fragment is tested on another. What do you expect to happen to the correlation, and why?
 """),
 ]
 
