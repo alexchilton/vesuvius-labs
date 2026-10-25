@@ -25,6 +25,8 @@ NB["00_the_problem"] = [
 md("""
 # 00 · Reading a scroll nobody can open
 
+> **New to this?** Every term is explained in plain words in the [glossary](glossary.ipynb).
+
 **The problem.** In 79 AD Vesuvius buried a villa at Herculaneum under some twenty metres of volcanic material. The
 villa held a library. Its papyrus scrolls were carbonised: they survived as black lumps that crumble if you try to
 unroll them. Roughly a thousand are still unread. The Vesuvius Challenge reads them **without opening them**: scan the
@@ -142,6 +144,8 @@ for lvl in range(6):
 md("""
 Level 0 is about **920 GB**. A slice at level 4 is a handful of 128³ chunks.
 
+The words you need first (about 70 more, in plain language, in the [glossary](glossary.ipynb)):
+
 | word | meaning |
 |---|---|
 | scroll | a closed papyrus roll (PHerc. = Herculaneum papyrus, followed by its inventory number) |
@@ -240,6 +244,8 @@ Discord and scrollprize.substack.com.
 NB["01_volumes"] = [
 md("""
 # 01 · The volume: chunks, air and papyrus
+
+> **New to this?** Every term is explained in plain words in the [glossary](glossary.ipynb).
 
 **The problem.** Every later step reads the scan. Before tracing a sheet or detecting ink, you need to know how the
 scan is stored (so that reading it is cheap), what its numbers mean (so that "bright" is not mistaken for "papyrus"),
@@ -392,6 +398,42 @@ the sheet is damaged: exactly where tracers go wrong.
 The structure tensor still matters: it needs no training data, it is fast, and it is a sanity check on any learned
 normal field.
 
+## 6. How the winners predict papyrus: the 2026 Surface Detection competition
+
+The Kaggle competition *Vesuvius Challenge – Surface Detection* (ended March 2026) asked for a binary mask of papyrus
+surface in 3D CT chunks, scored for **topology**, not just overlap. Notes on the top write-ups are in
+`docs/SURFACE_DETECTION_WRITEUPS.md`. Kaggle's write-up pages could not be read directly, so their content comes from
+search-engine extracts: treat exact numbers as unverified.
+
+**The metric (unverified wording):** 0.30 × TopoScore + 0.35 × SurfaceDice@2 + 0.35 × VOI score.
+
+| term | what it punishes |
+|---|---|
+| TopoScore (Betti matching over components, tunnels, cavities) | two wraps bridged into one, one wrap broken in two, spurious holes |
+| SurfaceDice at 2 voxels | surfaces more than 2 voxels from where they should be |
+| VOI score, 1 / (1 + 0.3 · VOI) | sheets merged or split, counted over connected components |
+
+A mask can overlap the label almost perfectly and still score badly if one voxel bridges two wraps. That single voxel
+is a sheet switch waiting to happen (notebook 02).
+
+**What the top teams did** (places 1, 2, 4, 7, 8, 9, 10 reached; 3, 6, 11, 12 not found):
+
+| pattern | who | detail |
+|---|---|---|
+| nnU-Net (ResEnc) as the backbone | all seven reached | the standard medical-imaging 3D U-Net framework, mostly unmodified |
+| ensembles over **patch sizes** | 1st (128/192/256), 2nd (128/160), 8th (224/256/288) | different receptive fields trade local precision against global continuity |
+| mirroring test-time augmentation | 4th, 7th, 8th | no rotations reported |
+| skeleton-aware losses | 7th (CE + Dice + Skeleton Recall), 9th (the organisers' medial-surface-recall trainer) | 7th tried clDice and found it did **not** help |
+| **post-processing as the main lever** | every reached write-up; 2nd titled theirs "a postprocessing win" | hole patching by lookup table (1st), PCA-plane filling of loop holes (4th), Frangi sheetness + anisotropic diffusion + closing (7th), hysteresis thresholds 0.50/0.90 (8th), skeletonise then re-thicken (9th) |
+| small-component removal, tuned thresholds | 4th (< 1,000 voxels, threshold 0.2), 9th (< 5,000 voxels) | 1st found a *higher* threshold better on the private board |
+
+Two lessons that carry beyond this competition:
+
+1. **9th place reported that bigger patches (224, 256) raised Dice but lowered the topology score.** The metric you
+   optimise picks the model; "better segmentation" is not one number.
+2. **1st place found no general fix for touching sheets merging.** That is open problem 2, still open, and the reason
+   the challenge now leans on global spiral fitting (notebook 05) rather than on local masks alone.
+
 ## Ideas to try
 
 1. Compute coherence at window sizes 1, 3 and 6 and watch where neighbouring wraps merge.
@@ -405,6 +447,7 @@ normal field.
 3. The structure tensor's normal has a sign ambiguity. Why does that matter when you sample "in front of" a sheet?
 4. A read of a 256³ block takes 27 chunks instead of 8. What changed, and how do you avoid it?
 5. Which pyramid level would you use to find the scroll's outline, and which to see fibres?
+6. A predicted mask has Dice 0.95 but one voxel bridges two wraps. Which term of the Surface Detection metric catches it, and why does it matter downstream?
 """),
 ]
 
@@ -412,6 +455,8 @@ normal field.
 NB["02_flattening"] = [
 md("""
 # 02 · Virtual unwrapping by hand
+
+> **New to this?** Every term is explained in plain words in the [glossary](glossary.ipynb).
 
 **The problem.** Ink detection needs the papyrus as a flat image. But in the scan the sheet is a curved, crushed
 surface inside a 3D block. **Virtual unwrapping** has two halves: *segmentation* (find the sheet and describe it as a
@@ -589,6 +634,8 @@ Notebook 05 builds a toy version of that idea.
 NB["03_ink_detection"] = [
 md("""
 # 03 · Ink detection: a small 2.5D CNN
+
+> **New to this?** Every term is explained in plain words in the [glossary](glossary.ipynb).
 
 **The problem.** After flattening (notebook 02) the sheet is a stack of layers parallel to the papyrus. Somewhere in
 that stack is ink, but Herculaneum ink is carbon on carbonised papyrus: it absorbs X-rays almost exactly as the sheet
@@ -787,6 +834,8 @@ NB["04_self_supervised"] = [
 md("""
 # 04 · Few labels: does self-supervised pretraining help?
 
+> **New to this?** Every term is explained in plain words in the [glossary](glossary.ipynb).
+
 **The question.** Labels are scarce in this challenge; unlabelled scan is not. If we first teach the encoder papyrus
 texture from **unlabelled** layers, does it then learn ink from fewer labels than an encoder trained from scratch?
 
@@ -934,6 +983,8 @@ the experiment called a null in its opening table.
 NB["05_uncrushing_flows"] = [
 md("""
 # 05 · Uncrushing a scroll with flows
+
+> **New to this?** Every term is explained in plain words in the [glossary](glossary.ipynb).
 
 **The problem.** A scroll was a neat spiral of papyrus before Vesuvius crushed it. If we could undo the crush, every wrap
 would be a clean circle-like turn, and following one sheet would be easy. Nobody has an uncrushed copy of a real scroll,

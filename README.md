@@ -16,6 +16,8 @@ CC-BY-NC 4.0); no account or bulk download is needed. Pieces read once are cache
 | [05 uncrushing with flows](notebooks/05_uncrushing_flows.ipynb) | crush synthetic spirals with a velocity-field **flow** (invertible, never folds), train a U-Net to undo it, compare with unpaired OT flow matching, then test on a real crushed cross-section; the real test fails (roundness 0.196 → 0.233), and the notebook says why | one level-4 slice + the w025 mesh |
 
 Background, prizes, the ten open problems and the data layout: [docs/OVERVIEW.md](docs/OVERVIEW.md).
+New words: [docs/GLOSSARY.md](docs/GLOSSARY.md) (also as [notebooks/glossary.ipynb](notebooks/glossary.ipynb)).
+Top write-ups of the 2026 Surface Detection competition: [docs/SURFACE_DETECTION_WRITEUPS.md](docs/SURFACE_DETECTION_WRITEUPS.md).
 Notes from the five tutorials at the top of scrollprize.org/tutorial (VC3D, spiral fitting, winding constraints, ink detection, scroll anatomy): [docs/WEBSITE_NOTES.md](docs/WEBSITE_NOTES.md).
 
 ## Run
