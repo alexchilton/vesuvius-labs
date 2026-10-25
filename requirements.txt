@@ -1,0 +1,15 @@
+zarr<3
+fsspec
+s3fs
+numpy
+scipy
+scikit-image
+matplotlib
+pandas
+tifffile
+pillow
+torch
+jupyter
+nbconvert
+ipykernel
+tqdm
